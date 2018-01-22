@@ -75,8 +75,8 @@ func filePath(s []string) string {
 }
 
 //handle the 2nd ordinal case of lower bound if 1st ordinal vf == 1st ordinal lb
-//eleminate unsupported versions
-//return supported if not eleminated
+//eliminate unsupported versions
+//return supported if not eliminated
 func supported(vf string, l []int, u []int) bool {
 
 	fv := strings.Split(vf, ".")
