@@ -48,6 +48,7 @@ func main() {
 	foundVersion := m["Server number"]
 	//We shouldn't need to check dot releases as our documentation
 	supportedVersions := []string{"5.5", "6", "7", "9"}
+	fmt.Println(supportedVersions[0])
 	fv := strings.Split(foundVersion, ".")
 	fmt.Println(fv[0])
 	fmt.Println(fv[0] < supportedVersions[0])
