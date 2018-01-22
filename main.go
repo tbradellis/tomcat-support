@@ -6,8 +6,16 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 )
+
+//inclusive lower bound
+//each element corresponds to the ordinal for the lower and upper bound versions
+var lb = []int{5, 5}
+
+//exclusive upper bound
+var ub = []int{9, 0}
 
 func main() {
 	//	*/lib
@@ -26,12 +34,11 @@ func main() {
 		log.Fatalf("cmd.Run() failed with %s\n", err)
 	}
 	outStr, errStr := string(stdout.Bytes()), string(stderr.Bytes())
-
-	fmt.Printf("out:\n%s\nerr:\n%s\n", outStr, errStr)
-	fmt.Println(
-		"**************",
-	)
-
+	if errStr != "" {
+		fmt.Println("Error: ", errStr)
+	}
+	//fmt.Printf("out:\n%s\nerr:\n%s\n", outStr, errStr)
+	//outStr output from java -classpath
 	testSlice := strings.Split(outStr, "\n")
 	var m = make(map[string]string)
 
@@ -41,20 +48,12 @@ func main() {
 			m[strings.TrimSpace(z[0])] = strings.TrimSpace(z[1])
 		}
 	}
-	fmt.Println("Map:", m)
-	fmt.Println("Key: Server number;", "Value:", m["Server number"])
+	//fmt.Println("Map:", m)
+	//fmt.Println("Key: Server number;", "Value:", m["Server number"])
 
 	//Start doing version comparison
 	foundVersion := m["Server number"]
-	//We shouldn't need to check dot releases as our documentation
-	supportedVersions := []string{"5.5", "6", "7", "9"}
-	fmt.Println(supportedVersions[0])
-	fv := strings.Split(foundVersion, ".")
-	fmt.Println(fv[0])
-	fmt.Println(fv[0] < supportedVersions[0])
-	//for i, val := range supportedVersions {
-
-	//}
+	fmt.Println(supported(foundVersion, lb, ub))
 
 }
 
@@ -62,7 +61,10 @@ func filePath(s []string) string {
 	current := s[0]
 	for i := range s {
 		if _, err := os.Stat(s[i]); !os.IsExist(err) {
-			fmt.Println(err)
+			//fmt.Println(err)
+			if err != nil {
+				fmt.Println("Info:", err)
+			}
 			current = s[i]
 
 		}
@@ -72,19 +74,28 @@ func filePath(s []string) string {
 
 }
 
-//Now returning based on an address that matches
+//handle the 2nd ordinal case of lower bound if 1st ordinal vf == 1st ordinal lb
+//eleminate unsupported versions
+//return supported if not eleminated
+func supported(vf string, l []int, u []int) bool {
 
-//func inRange(t string) bool {
-//	pf := strings.Split(t, ".")
-// 	piecesSupport := strings.Split(supportedVersions, ".")
+	fv := strings.Split(vf, ".")
+	s, err := strconv.Atoi(fv[0])
+	if err != nil {
+		fmt.Println("Error: ", err)
+	}
+	if s == l[0] {
+		s2, err := strconv.Atoi(fv[1])
+		if err != nil {
+			fmt.Println("Error: ", err)
+		}
+		if s2 < l[1] {
+			return false
+		}
 
-// 	for i, val := range piecesSupport {
-// 		if val == 'x' {
-// 			return true
-// 		}
-// 		if val != piecesFound[i] {
-// 			return false
-// 		}
-// 	}
-// 	return true
-// }
+	} else if s < l[0] || s >= u[0] {
+		return false
+	}
+	return true
+
+}
